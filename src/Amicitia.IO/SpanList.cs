@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace Amicitia.IO.Utilities
+namespace Amicitia.IO
 {
     public unsafe ref struct SpanList<T> where T : unmanaged
     {
