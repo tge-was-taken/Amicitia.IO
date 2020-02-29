@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Amicitia.IO\Amicitia.IO.csproj" />
+    <ProjectReference Include="..\..\Amicitia.IO\Amicitia.IO.csproj" />
   </ItemGroup>
 
 </Project>

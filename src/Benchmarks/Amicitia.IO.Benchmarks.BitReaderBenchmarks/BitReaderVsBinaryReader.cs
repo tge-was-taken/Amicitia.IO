@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Amicitia.IO.Binary;
+using Amicitia.IO.Streams;
 using BenchmarkDotNet.Attributes;
 
 namespace Amicitia.IO.Benchmarks
@@ -28,8 +29,8 @@ namespace Amicitia.IO.Benchmarks
         private MemoryStream mMemoryStream2;
 
         private BinaryReader mBinaryReader;
-        private BitReader mBitReader;
-        private BitReader mBitReaderBE;
+        private BinaryValueReader mBitReader;
+        private BinaryValueReader mBitReaderBE;
 
         public int TestDataCount { get; set; } = 1000000;
 
@@ -49,8 +50,8 @@ namespace Amicitia.IO.Benchmarks
             mMemoryStream2.Position = 0;
 
             mBinaryReader = new BinaryReader( mMemoryStream1 );
-            mBitReader = new BitReader( mMemoryStream2, StreamOwnership.Caller, null, Endianness.Little, Encoding.Default );
-            mBitReaderBE = new BitReader( mMemoryStream2, StreamOwnership.Caller, null, Endianness.Big, Encoding.Default );
+            mBitReader = new BinaryValueReader( mMemoryStream2, StreamOwnership.Retain, Endianness.Little );
+            mBitReaderBE = new BinaryValueReader( mMemoryStream2, StreamOwnership.Retain, Endianness.Big );
         }
 
         [IterationCleanup]
