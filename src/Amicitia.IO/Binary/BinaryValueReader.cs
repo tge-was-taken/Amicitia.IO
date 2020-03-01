@@ -24,6 +24,7 @@ namespace Amicitia.IO.Binary
         protected int mBitIndex;
 
         public long Position => mBaseStream.Position;
+        public long Length => mBaseStream.Length;
         public string FilePath { get; protected set; }
         public Endianness Endianness { get; set; }
         public Encoding Encoding { get; protected set; }
@@ -56,6 +57,12 @@ namespace Amicitia.IO.Binary
             InvalidateBits();
         }
 
+        public SeekToken At( long offset, SeekOrigin origin )
+        {
+            InvalidateBits();
+            return new SeekToken( mBaseStream, offset, origin );
+        }
+
         // Primitives
         public bool ReadBit( int index )
         {
@@ -86,6 +93,13 @@ namespace Amicitia.IO.Binary
             return value;
         }
 
+        public void Read<T>( out T value ) where T : unmanaged
+        {
+            ReadNative<T>( out value );
+            if ( Unsafe.SizeOf<T>() != 1 && IsSwappingNeeded() )
+                BinaryOperations<T>.Reverse( ref value );
+        }
+
         /// <summary>
         /// Reads a value in little endian format regardless of the specified endianness.
         /// </summary>
@@ -98,6 +112,18 @@ namespace Amicitia.IO.Binary
                 BinaryOperations<T>.Reverse( ref value );
 
             return value;
+        }
+
+        /// <summary>
+        /// Reads a value in little endian format regardless of the specified endianness.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public void ReadLittle<T>( out T value ) where T : unmanaged
+        {
+            ReadNative<T>( out value );
+            if ( Unsafe.SizeOf<T>() != 1 && !BitConverter.IsLittleEndian )
+                BinaryOperations<T>.Reverse( ref value );
         }
 
         /// <summary>
@@ -114,21 +140,34 @@ namespace Amicitia.IO.Binary
             return value;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void ReadBig<T>( out T value ) where T : unmanaged
+        {
+            ReadNative<T>( out value );
+            if ( Unsafe.SizeOf<T>() != 1 && BitConverter.IsLittleEndian )
+                BinaryOperations<T>.Reverse( ref value );
+        }
+
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
         private T ReadNative<T>() where T : unmanaged
+        {
+            ReadNative<T>( out var value );
+            return value;
+        }
+
+[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ReadNative<T>( out T value ) where T : unmanaged
         {
             if ( typeof( T ) == typeof( byte ) || typeof( T ) == typeof( sbyte ) )
             {
                 // Optimise for byte/sbyte
                 var tmp = InternalReadByte();
-                return Unsafe.As<byte, T>( ref tmp );
+                value = Unsafe.As<byte, T>( ref tmp );
             }
 
             var size = Unsafe.SizeOf<T>();
             InternalReadBytes( size, out var data );
 
-            var value = Unsafe.As<byte, T>( ref data[0] );
-            return value;
+            value = Unsafe.As<byte, T>( ref data[0] );
         }
 
         public void ReadArray<T>( int count, ref Span<T> destination ) where T : unmanaged

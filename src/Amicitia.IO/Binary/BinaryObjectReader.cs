@@ -8,6 +8,7 @@ using Amicitia.IO.Streams;
 
 namespace Amicitia.IO.Binary
 {
+
     public class BinaryObjectReader : BinaryValueReader
     {
         protected Dictionary<long, object> mObjectCache;
@@ -48,7 +49,7 @@ namespace Amicitia.IO.Binary
         //
         #region Offset methods
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
-        public long ReadOffset()
+        public long ReadOffsetValue()
         {
             return OffsetBinaryFormat == OffsetBinaryFormat.U32 ? Read<uint>() : Read<long>();
         }
@@ -56,12 +57,27 @@ namespace Amicitia.IO.Binary
         [DebuggerStepThrough]
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void ReadOffset( Action<BinaryObjectReader> action ) 
-            => ReadAtOffset( ReadOffset(), action );
+            => ReadAtOffset( ReadOffsetValue(), action );
 
         [DebuggerStepThrough]
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void ReadOffset( Action action ) 
-            => ReadAtOffset( ReadOffset(), action );
+            => ReadAtOffset( ReadOffsetValue(), action );
+
+        [DebuggerStepThrough]
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
+        public SeekToken ReadOffset()
+            => AtOffset( ReadOffsetValue() );
+
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
+        public SeekToken AtOffset( long offset )
+        {
+            var target = OffsetHandler.ResolveOffset(offset);
+            if ( target != -1 )
+                return new SeekToken( mBaseStream, target, SeekOrigin.Begin );
+
+            throw new InvalidOperationException( "Offset is not valid" );
+        }
 
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void ReadAtOffset( long offset, Action action )
@@ -92,7 +108,7 @@ namespace Amicitia.IO.Binary
         [DebuggerStepThrough]
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public T ReadValueOffset<T>() where T : unmanaged
-            => ReadValueAtOffset<T>( ReadOffset() );
+            => ReadValueAtOffset<T>( ReadOffsetValue() );
 
         public T ReadValueAtOffset<T>( long offset ) where T : unmanaged
         {
@@ -121,7 +137,7 @@ namespace Amicitia.IO.Binary
         [DebuggerStepThrough]
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public T[] ReadArrayOffset<T>( int count ) where T : unmanaged
-            => ReadArrayAtOffset<T>( ReadOffset(), count );
+            => ReadArrayAtOffset<T>( ReadOffsetValue(), count );
 
         public T[] ReadArrayAtOffset<T>( long offset, int count ) where T : unmanaged
         {
@@ -149,7 +165,7 @@ namespace Amicitia.IO.Binary
 
         [DebuggerStepThrough]
         public T ReadObjectOffset<T>() where T : IBinarySerializable, new()
-            => ReadObjectAtOffset<T>( ReadOffset() );
+            => ReadObjectAtOffset<T>( ReadOffsetValue() );
 
         public T ReadObjectAtOffset<T>( long offset ) 
             where T : IBinarySerializable, new()
