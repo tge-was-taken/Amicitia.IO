@@ -23,8 +23,9 @@ namespace Amicitia.IO.Binary
             public object Instance;
             public object Value;
             public WriteOffsetJobWriter Writer;
+            public bool PopulateInfo;
 
-            public WriteOffsetCmd( long position, long offsetOrigin, int alignment, object instance, object value, WriteOffsetJobWriter writer )
+            public WriteOffsetCmd( long position, long offsetOrigin, int alignment, object instance, object value, bool populateInfo, WriteOffsetJobWriter writer )
             {
                 Position = position;
                 OffsetOrigin = offsetOrigin;
@@ -32,6 +33,7 @@ namespace Amicitia.IO.Binary
                 Value = value;
                 Instance = instance;
                 Writer = writer;
+                PopulateInfo = populateInfo;
             }
         }
 
@@ -44,6 +46,7 @@ namespace Amicitia.IO.Binary
         public OffsetBinaryFormat OffsetBinaryFormat { get; set; }
         public IOffsetHandler OffsetHandler { get; set; }
         public int DefaultAlignment { get; set; }
+        public bool PopulateBinarySourceInfo { get; set; }
 
         public BinaryObjectWriter( string filePath, Endianness endianness, Encoding encoding )
             : base( filePath, endianness, encoding )
@@ -71,12 +74,13 @@ namespace Amicitia.IO.Binary
             OffsetHandler = new DefaultOffsetHandler( mBaseStream, OffsetZeroHandling.Invalid );
             mCmdQueue = new Queue<WriteOffsetCmd>();
             DefaultAlignment = 4;
+            PopulateBinarySourceInfo = true;
         }
 
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void WriteValueOffset<T>( T value, int alignment = 0 ) where T : unmanaged
         {
-            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value,
+            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value, false,
                                                    ( w, v ) => w.Write( ( T )v ) ) );
             WriteOffset( PLACEHOLDER_OFFSET );
         }
@@ -84,7 +88,7 @@ namespace Amicitia.IO.Binary
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void WriteArrayOffset<T>( Memory<T> value, int alignment = 0 ) where T : unmanaged
         {
-            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value,
+            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value, false,
                                                    ( w, v ) => w.WriteArray( ( ( Memory<T> )v ).Span ) ) );
             WriteOffset( PLACEHOLDER_OFFSET );
         }
@@ -92,7 +96,7 @@ namespace Amicitia.IO.Binary
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void WriteArrayOffset<T>( T[] value, int alignment = 0 ) where T : unmanaged
         {
-            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value,
+            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value, false,
                                                    ( w, v ) => w.WriteArray( ( T[] )v ) ) );
             WriteOffset( PLACEHOLDER_OFFSET );
         }
@@ -100,7 +104,7 @@ namespace Amicitia.IO.Binary
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void WriteCollectionOffset<T>( IEnumerable<T> value, int alignment = 0 ) where T : unmanaged
         {
-            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value,
+            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value, false,
                                                    ( w, v ) => w.WriteCollection( ( IEnumerable<T> )v ) ) );
             WriteOffset( PLACEHOLDER_OFFSET );
         }
@@ -108,7 +112,7 @@ namespace Amicitia.IO.Binary
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void WriteStringOffset( StringBinaryFormat format, string value, int fixedLength = -1, int alignment = 0 )
         {
-            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value,
+            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value, false,
                                        ( w, v ) => w.WriteString( format, ( string )v, fixedLength ) ) );
             WriteOffset( PLACEHOLDER_OFFSET );
         }
@@ -116,7 +120,7 @@ namespace Amicitia.IO.Binary
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void WriteStringOffset( Encoding encoding, StringBinaryFormat format, string value, int fixedLength = -1, int alignment = 0 )
         {
-            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value,
+            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value, false,
                                        ( w, v ) => w.WriteString( encoding, format, ( string )v, fixedLength ) ) );
             WriteOffset( PLACEHOLDER_OFFSET );
         }
@@ -124,7 +128,7 @@ namespace Amicitia.IO.Binary
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void WriteStringArrayOffset( StringBinaryFormat format, string[] value, int fixedLength = -1, int alignment = 0 )
         {
-            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value,
+            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value, false,
                                        ( w, v ) => w.WriteStringArray( format, ( string[] )v, fixedLength ) ) );
             WriteOffset( PLACEHOLDER_OFFSET );
         }
@@ -132,7 +136,7 @@ namespace Amicitia.IO.Binary
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void WriteStringArrayOffset( Encoding encoding, StringBinaryFormat format, string[] value, int fixedLength = -1, int alignment = 0 )
         {
-            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value,
+            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value, false,
                                        ( w, v ) => w.WriteStringArray( encoding, format, ( string[] )v, fixedLength ) ) );
             WriteOffset( PLACEHOLDER_OFFSET );
         }
@@ -149,28 +153,28 @@ namespace Amicitia.IO.Binary
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void WriteOffset( Action action, int alignment = 0 )
         {
-            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, null, null, ( w, v ) => action() ) );
+            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, null, null, false, ( w, v ) => action() ) );
             WriteOffset( PLACEHOLDER_OFFSET );
         }
 
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void WriteOffset( Action<BinaryObjectWriter> action, int alignment = 0 )
         {
-            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, null, null, ( w, v ) => action( w ) ) );
+            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, null, null, false, ( w, v ) => action( w ) ) );
             WriteOffset( PLACEHOLDER_OFFSET );
         }
 
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void WriteOffset( int alignment, object instance, object value, Action<BinaryObjectWriter, object> action )
         {
-            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, instance, value, Unsafe.As<WriteOffsetJobWriter>( action ) ) );
+            mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, instance, value, false, Unsafe.As<WriteOffsetJobWriter>( action ) ) );
             WriteOffset( PLACEHOLDER_OFFSET );
         }
 
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void WriteOffset( long position, long offsetBase, int alignment, object instance, object value, Action<BinaryObjectWriter, object> action )
         {
-            mCmdQueue.Enqueue( new WriteOffsetCmd( position, offsetBase, alignment, instance, value, Unsafe.As<WriteOffsetJobWriter>( action ) ) );
+            mCmdQueue.Enqueue( new WriteOffsetCmd( position, offsetBase, alignment, instance, value, false, Unsafe.As<WriteOffsetJobWriter>( action ) ) );
             WriteOffset( PLACEHOLDER_OFFSET );
         }
 
@@ -191,8 +195,9 @@ namespace Amicitia.IO.Binary
             }
             else
             {
-                mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value,
-                                                       ( w, v ) => w.WriteObject( ( T )v ) ) );
+                mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value, 
+                    PopulateBinarySourceInfo && value is IBinarySerializableWithInfo,
+                    ( w, v ) => w.WriteObject( ( T )v ) ) );
                 WriteOffset( PLACEHOLDER_OFFSET );
             }
         }
@@ -209,11 +214,12 @@ namespace Amicitia.IO.Binary
             {
                 var temp = ( value, context );
                 mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, temp,
-                                                       ( w, v ) =>
-                                                       {
-                                                           var temp2 = ( Tuple<T, TContext> ) v;
-                                                           w.WriteObject( temp2.Item1, temp2.Item2 );
-                                                       }));
+                    PopulateBinarySourceInfo && value is IBinarySerializableWithInfo,
+                    ( w, v ) =>
+                    {
+                        var temp2 = ( Tuple<T, TContext> ) v;
+                        w.WriteObject( temp2.Item1, temp2.Item2 );
+                    }));
                 WriteOffset( PLACEHOLDER_OFFSET );
             }
         }
@@ -232,6 +238,12 @@ namespace Amicitia.IO.Binary
 
                     mBaseStream.Seek( pos, SeekOrigin.Begin );
                     cmd.Writer( this, cmd.Value );
+
+                    if ( cmd.PopulateInfo )
+                    {
+                        ( ( ( IBinarySerializableWithInfo )cmd.Instance ) ).BinarySourceInfo =
+                            new BinarySourceInfo( FilePath, pos, Position, ( int )( Position - pos ), Endianness );
+                    }
                 }
 
                 var prevPos = Position;
