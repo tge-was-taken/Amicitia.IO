@@ -19,13 +19,20 @@ namespace Amicitia.IO.Binary
 
         public override long Seek( long offset, SeekOrigin origin )
         {
-            Position = origin switch
+            switch ( origin )
             {
-                SeekOrigin.Begin => Position = offset,
-                SeekOrigin.Current => Position += offset,
-                SeekOrigin.End => Position += offset,
-                _ => throw new ArgumentOutOfRangeException( nameof( origin ), origin, null )
-            };
+                case SeekOrigin.Begin:
+                    Position = offset;
+                    break;
+                case SeekOrigin.Current:
+                    Position += offset;
+                    break;
+                case SeekOrigin.End:
+                    Position += offset;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException( nameof( origin ), origin, null );
+            }
 
             return Position;
         }

@@ -157,9 +157,11 @@ namespace Amicitia.IO.Binary.Tests
 
             void DoTest(byte[] bytes, StringBinaryFormat format, int fixedLength, string expected)
             {
-                using var reader = new BinaryValueReader(new MemoryStream(bytes), StreamOwnership.Transfer, Endianness.Little, Encoding.Default);
-                var value = reader.ReadString(format, fixedLength);
-                Assert.AreEqual( expected, value );
+                using ( var reader = new BinaryValueReader( new MemoryStream( bytes ), StreamOwnership.Transfer, Endianness.Little, Encoding.Default ) )
+                {
+                    var value = reader.ReadString(format, fixedLength);
+                    Assert.AreEqual( expected, value );
+                }
             }
 
             DoTest( nullTerminatedStringBytes, StringBinaryFormat.NullTerminated, -1, "HELLO" );

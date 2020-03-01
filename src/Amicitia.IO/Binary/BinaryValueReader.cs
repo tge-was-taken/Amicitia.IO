@@ -285,7 +285,11 @@ namespace Amicitia.IO.Binary
                     throw new ArgumentException( "Unknown string format", nameof( format ) );
             }
 
+#if NETSTANDARD2_1
             return encoding.GetString( data );
+#else
+            return encoding.GetString( data.ToArray() );
+#endif
         }
 
         public string[] ReadStringArray( StringBinaryFormat format, int count )

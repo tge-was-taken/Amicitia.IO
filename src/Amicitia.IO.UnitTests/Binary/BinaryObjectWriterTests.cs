@@ -152,15 +152,15 @@ namespace Amicitia.IO.Binary.Tests
 
             using ( var reader = new BinaryObjectReader( stream, StreamOwnership.Retain, Endianness.Little ) )
             {
-                reader.ReadOffset((reader) =>
+                reader.ReadOffset((reader2) =>
                 {
-                    Assert.AreEqual( 4, reader.Position );
-                    var value = reader.Read<int>();
+                    Assert.AreEqual( 4, reader2.Position );
+                    var value = reader2.Read<int>();
                     Assert.AreEqual( 69, value );
-                    reader.ReadOffset((reader) =>
+                    reader2.ReadOffset((reader3) =>
                     {
-                        Assert.AreEqual( 16, reader.Position );
-                        Assert.AreEqual( 420, reader.Read<int>() );
+                        Assert.AreEqual( 16, reader3.Position );
+                        Assert.AreEqual( 420, reader3.Read<int>() );
                     });
                 });
             }

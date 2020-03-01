@@ -101,7 +101,11 @@ namespace Amicitia.IO.Binary
             if ( Unsafe.SizeOf<T>() != 1 && IsSwappingNeeded() )
                 BinaryOperations<T>.Reverse( ref value );
 
+#if NETSTANDARD2_1
             WriteBytesCore( MemoryMarshal.Cast<T, byte>( MemoryMarshal.CreateReadOnlySpan( ref value, 1 ) ) );
+#else
+            WriteBytesCore( MemoryMarshal.Cast<T, byte>( new ReadOnlySpan<T>( Unsafe.AsPointer( ref value ), 1 ) ) );
+#endif
         }
 
         /// <summary>
@@ -109,7 +113,7 @@ namespace Amicitia.IO.Binary
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="value"></param>
-        public void WriteLittle<T>( T value ) where T : unmanaged
+        public unsafe void WriteLittle<T>( T value ) where T : unmanaged
         {
             FlushBits();
 
@@ -123,7 +127,11 @@ namespace Amicitia.IO.Binary
             if ( Unsafe.SizeOf<T>() != 1 && !BitConverter.IsLittleEndian )
                 BinaryOperations<T>.Reverse( ref value );
 
+#if NETSTANDARD2_1
             WriteBytesCore( MemoryMarshal.Cast<T, byte>( MemoryMarshal.CreateReadOnlySpan( ref value, 1 ) ) );
+#else
+            WriteBytesCore( MemoryMarshal.Cast<T, byte>( new ReadOnlySpan<T>( Unsafe.AsPointer( ref value ), 1 ) ) );
+#endif
         }
 
         /// <summary>
@@ -131,7 +139,7 @@ namespace Amicitia.IO.Binary
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="value"></param>
-        public void WriteBig<T>( T value ) where T : unmanaged
+        public unsafe void WriteBig<T>( T value ) where T : unmanaged
         {
             FlushBits();
 
@@ -145,14 +153,18 @@ namespace Amicitia.IO.Binary
             if ( Unsafe.SizeOf<T>() != 1 && BitConverter.IsLittleEndian )
                 BinaryOperations<T>.Reverse( ref value );
 
+#if NETSTANDARD2_1
             WriteBytesCore( MemoryMarshal.Cast<T, byte>( MemoryMarshal.CreateReadOnlySpan( ref value, 1 ) ) );
+#else
+            WriteBytesCore( MemoryMarshal.Cast<T, byte>( new ReadOnlySpan<T>( Unsafe.AsPointer( ref value ), 1 ) ) );
+#endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteArray<T>( Span<T> data ) where T : unmanaged
             => WriteArray( (ReadOnlySpan<T>)data );
 
-        public void WriteArray<T>( ReadOnlySpan<T> data ) where T : unmanaged
+        public unsafe void WriteArray<T>( ReadOnlySpan<T> data ) where T : unmanaged
         {
             if ( data.Length == 0 ) return;
 
@@ -174,7 +186,12 @@ namespace Amicitia.IO.Binary
                     // Don't want to overwrite
                     var element = data[i];
                     BinaryOperations<T>.Reverse( ref element );
+
+#if NETSTANDARD2_1
                     WriteBytesCore( MemoryMarshal.Cast<T, byte>( MemoryMarshal.CreateReadOnlySpan( ref element, 1 ) ) );
+#else
+                    WriteBytesCore( MemoryMarshal.Cast<T, byte>( new ReadOnlySpan<T>( Unsafe.AsPointer( ref element ), 1 ) ) );
+#endif
                 }
             }
         }
@@ -190,7 +207,7 @@ namespace Amicitia.IO.Binary
                 Write( item );
         }
 
-        #region Backwards compatibility / Helpers
+#region Backwards compatibility / Helpers
         public void WriteSByte( sbyte value ) => Write<sbyte>( value );
         public void WriteByte( byte value ) => Write<byte>( value );
         public void WriteInt16( short value ) => Write<short>( value );
@@ -207,65 +224,100 @@ namespace Amicitia.IO.Binary
         //
         // -- Strings
         //
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void WriteString( StringBinaryFormat format, string value, int fixedLength = -1 )
             => WriteString( Encoding, format, value, fixedLength );
 
-        public void WriteString( Encoding encoding, StringBinaryFormat format, string value, int fixedLength = -1 )
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
+        public void WriteStringNullTerminated( Encoding encoding, string value )
         {
             FlushBits();
-
             var bytes = encoding.GetBytes( value );
+            WriteArray( bytes );
+            Write<byte>( 0 );
+        }
 
+        public void WriteStringFixedLength( Encoding encoding, string value, int fixedLength )
+        {
+            if ( fixedLength < 0 )
+                throw new ArgumentException( "Invalid fixed length specified" );
+
+            FlushBits();
+            var bytes = encoding.GetBytes( value );
+            WriteArray<byte>( bytes.AsSpan().Slice( 0, Math.Min( bytes.Length, fixedLength ) ) );
+
+            if ( bytes.Length < fixedLength )
+            {
+                // Write padding
+                var paddingBytes = fixedLength - bytes.Length;
+                for ( int i = 0; i < paddingBytes; i++ )
+                    Write<byte>( 0 );
+            }
+        }
+
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
+        public void WriteStringPrefixedLength8( Encoding encoding, string value )
+        {
+            FlushBits();
+            var bytes = encoding.GetBytes( value );
+            Write<byte>( ( byte )bytes.Length );
+            WriteArray( bytes );
+        }
+
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
+        public void WriteStringPrefixedLength16( Encoding encoding, string value )
+        {
+            FlushBits();
+            var bytes = encoding.GetBytes( value );
+            Write<ushort>( ( ushort )bytes.Length );
+            WriteArray( bytes );
+        }
+
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
+        public void WriteStringPrefixedLength32( Encoding encoding, string value )
+        {
+            FlushBits();
+            var bytes = encoding.GetBytes( value );
+            Write<uint>( ( uint )bytes.Length );
+            WriteArray( bytes );
+        }
+
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
+        public void WriteStringPrefixedLength64( Encoding encoding, string value )
+        {
+            FlushBits();
+            var bytes = encoding.GetBytes( value );
+            Write<ulong>( ( ulong )bytes.Length );
+            WriteArray( bytes );
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteString( Encoding encoding, StringBinaryFormat format, string value, int fixedLength = -1 )
+        {
             switch ( format )
             {
                 case StringBinaryFormat.NullTerminated:
-                    WriteArray( bytes );
-                    Write<byte>( 0 );
+                    WriteStringNullTerminated( encoding, value );
                     break;
 
                 case StringBinaryFormat.FixedLength:
-                    {
-                        if ( fixedLength == -1 )
-                            throw new ArgumentException( "Invalid fixed length specified" );
-
-                        WriteArray<byte>( bytes.AsSpan().Slice( 0, Math.Min( bytes.Length, fixedLength ) ) );
-                        
-                        if ( bytes.Length < fixedLength )
-                        {
-                            // Write padding
-                            var paddingBytes = fixedLength - bytes.Length;
-                            for ( int i = 0; i < paddingBytes; i++ )
-                                Write<byte>( 0 );
-                        }
-                    }
+                    WriteStringFixedLength( encoding, value, fixedLength );
                     break;
 
                 case StringBinaryFormat.PrefixedLength8:
-                    {
-                        Write<byte>( (byte)bytes.Length );
-                        WriteArray( bytes );
-                    }
+                    WriteStringPrefixedLength8( encoding, value );
                     break;
 
                 case StringBinaryFormat.PrefixedLength16:
-                    {
-                        Write<ushort>( ( ushort )bytes.Length );
-                        WriteArray( bytes );
-                    }
+                    WriteStringPrefixedLength16( encoding, value );
                     break;
 
                 case StringBinaryFormat.PrefixedLength32:
-                    {
-                        Write<uint>( ( uint )bytes.Length );
-                        WriteArray( bytes );
-                    }
+                    WriteStringPrefixedLength32( encoding, value );
                     break;
 
                 case StringBinaryFormat.PrefixedLength64:
-                    {
-                        Write<ulong>( ( ulong )bytes.Length );
-                        WriteArray( bytes );
-                    }
+                    WriteStringPrefixedLength64( encoding, value );
                     break;
 
                 default:
@@ -311,10 +363,32 @@ namespace Amicitia.IO.Binary
         //
         // -- Private / protected
         //
+        protected virtual void WriteBytesCore( Span<byte> data )
+        {
+            Debug.Assert( mBitIndex == -1, "Bits have not been flushed before writing" );
+
+#if NETSTANDARD2_1
+            mBaseStream.Write( data );
+#else
+            for (int i = 0; i < data.Length; i++)
+			{
+                mBaseStream.WriteByte( data[i] );
+			}
+#endif
+        }
+
         protected virtual void WriteBytesCore( ReadOnlySpan<byte> data )
         {
             Debug.Assert( mBitIndex == -1, "Bits have not been flushed before writing" );
+
+#if NETSTANDARD2_1
             mBaseStream.Write( data );
+#else
+            for (int i = 0; i < data.Length; i++)
+			{
+                mBaseStream.WriteByte( data[i] );
+			}
+#endif
         }
 
         protected virtual void WriteByteCore( byte value )

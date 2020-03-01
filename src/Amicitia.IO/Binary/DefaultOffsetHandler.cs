@@ -12,11 +12,11 @@ namespace Amicitia.IO.Binary
     public sealed class DefaultOffsetHandler : IOffsetHandler
     {
         private Stream mStream;
-        private Stack<long> mOffsetBaseStack;
+        private Stack<long> mOffsetOriginStack;
         private HashSet<long> mValidOffsetPositions;
         private OffsetZeroHandling mZeroHandling;
 
-        public long OffsetBase => mOffsetBaseStack.Peek();
+        public long OffsetOrigin => mOffsetOriginStack.Peek();
 
         public IEnumerable<long> OffsetPositions => mValidOffsetPositions;
 
@@ -25,19 +25,19 @@ namespace Amicitia.IO.Binary
         public DefaultOffsetHandler( Stream stream, OffsetZeroHandling zeroHandling = OffsetZeroHandling.Invalid )
         {
             mStream = stream;
-            mOffsetBaseStack = new Stack<long>();
-            mOffsetBaseStack.Push( 0 );
+            mOffsetOriginStack = new Stack<long>();
+            mOffsetOriginStack.Push( 0 );
             mValidOffsetPositions = new HashSet<long>();
         }
 
-        public void PushOffsetBase( long position )
+        public void PushOffsetOrigin( long position )
         {
-            mOffsetBaseStack.Push( position );
+            mOffsetOriginStack.Push( position );
         }
 
-        public void PopOffsetBase()
+        public void PopOffsetOrigin()
         {
-            mOffsetBaseStack.Pop();
+            mOffsetOriginStack.Pop();
         }
 
         public void RegisterOffsetPositions( IEnumerable<long> offsetPositions )
@@ -57,7 +57,7 @@ namespace Amicitia.IO.Binary
             if ( mZeroHandling == OffsetZeroHandling.Invalid && offset == 0 ) 
                 return -1;
 
-            var position = mOffsetBaseStack.Peek() + offset;
+            var position = mOffsetOriginStack.Peek() + offset;
             if ( position < 0 || position > mStream.Length ) 
                 return -1;
 
@@ -66,7 +66,7 @@ namespace Amicitia.IO.Binary
 
         public long CalculateOffset( long position )
         {
-            return position - OffsetBase;
+            return position - OffsetOrigin;
         }
 
         public void RegisterOffsetPosition( long offsetPosition )

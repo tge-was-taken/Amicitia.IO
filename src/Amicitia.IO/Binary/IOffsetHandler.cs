@@ -4,12 +4,12 @@ namespace Amicitia.IO.Binary
 {
     public interface IOffsetHandler
     {
-        long OffsetBase { get; }
+        long OffsetOrigin { get; }
         IEnumerable<long> OffsetPositions { get; }
         long NullOffset { get; }
 
-        void PushOffsetBase( long position );
-        void PopOffsetBase();
+        void PushOffsetOrigin( long position );
+        void PopOffsetOrigin();
         void RegisterOffsetPositions( IEnumerable<long> offsetPositions );
         void RegisterOffsetPosition( long offsetPosition );
         long ResolveOffset( long position, long offset );

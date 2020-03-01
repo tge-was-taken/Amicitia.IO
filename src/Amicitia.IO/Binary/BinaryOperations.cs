@@ -15,11 +15,11 @@ namespace Amicitia.IO.Binary
 
         static BinaryOperations()
         {
-            if ( typeof( T ) == typeof( byte ) || typeof( T ) == typeof( sbyte ) ||
-                typeof( T ) == typeof( short ) || typeof( T ) == typeof( ushort ) ||
-                typeof( T ) == typeof( int ) || typeof( T ) == typeof( uint ) ||
-                typeof( T ) == typeof( long ) || typeof( T ) == typeof( ulong ) ||
-                typeof( T ) == typeof( float ) || typeof( T ) == typeof( double ) )
+            if ( typeof( T ) != typeof( byte ) && typeof( T ) != typeof( sbyte ) &&
+                typeof( T ) != typeof( short ) && typeof( T ) != typeof( ushort ) &&
+                typeof( T ) != typeof( int ) && typeof( T ) != typeof( uint ) &&
+                typeof( T ) != typeof( long ) && typeof( T ) != typeof( ulong ) &&
+                typeof( T ) != typeof( float ) && typeof( T ) != typeof( double ) )
             {
                 sReverseMethod = TypeBinaryReverseMethodGenerator.Generate<T>();
             }

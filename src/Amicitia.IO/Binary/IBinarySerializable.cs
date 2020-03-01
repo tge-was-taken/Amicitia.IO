@@ -17,11 +17,13 @@ namespace Amicitia.IO.Binary
 
     public interface IBinarySerializable<TContext> : IBinarySerializable
     {
+#if FEATURE_DEFAULT_INTERFACE_IMPLEMENTATION
         void IBinarySerializable.Read( BinaryObjectReader reader )
             => Read( reader, default );
 
         void IBinarySerializable.Write( BinaryObjectWriter writer )
            => Write( writer, default );
+#endif
 
         void Read( BinaryObjectReader reader, TContext context );
         void Write( BinaryObjectWriter writer, TContext context );

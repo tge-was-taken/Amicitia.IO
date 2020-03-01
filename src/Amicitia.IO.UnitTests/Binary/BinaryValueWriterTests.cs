@@ -37,7 +37,7 @@ namespace Amicitia.IO.Binary.Tests
         public static void WriteBitTest(Func<Stream, StreamOwnership, Endianness, BinaryValueWriter> writerFactory)
         {
             var stream = new MemoryStream();
-            using ( var writer = writerFactory( stream, StreamOwnership.Transfer, Endianness.Little ) )
+            using ( var writer = writerFactory( stream, StreamOwnership.Retain, Endianness.Little ) )
             {
                 writer.WriteBit( true );
                 writer.WriteBit( true );
@@ -51,16 +51,18 @@ namespace Amicitia.IO.Binary.Tests
             }
             stream.Position = 0;
 
-            using var reader = new BinaryValueReader( stream, StreamOwnership.Transfer, Endianness.Little, Encoding.Default );
-            Assert.IsTrue( reader.ReadBit() );
-            Assert.IsTrue( reader.ReadBit() );
-            Assert.IsFalse( reader.ReadBit() );
-            Assert.IsTrue( reader.ReadBit() );
-            reader.Seek( 3, SeekOrigin.Current );
-            Assert.IsFalse( reader.ReadBit() );
-            Assert.IsFalse( reader.ReadBit() );
-            Assert.IsTrue( reader.ReadBit() );
-            Assert.IsFalse( reader.ReadBit() );
+            using ( var reader = new BinaryValueReader( stream, StreamOwnership.Transfer, Endianness.Little, Encoding.Default ) )
+            {
+                Assert.IsTrue( reader.ReadBit() );
+                Assert.IsTrue( reader.ReadBit() );
+                Assert.IsFalse( reader.ReadBit() );
+                Assert.IsTrue( reader.ReadBit() );
+                reader.Seek( 3, SeekOrigin.Current );
+                Assert.IsFalse( reader.ReadBit() );
+                Assert.IsFalse( reader.ReadBit() );
+                Assert.IsTrue( reader.ReadBit() );
+                Assert.IsFalse( reader.ReadBit() );
+            }
         }
 
         public static void WriteBitTestIndexed( Func<Stream, StreamOwnership, Endianness, BinaryValueWriter> writerFactory )
@@ -80,16 +82,18 @@ namespace Amicitia.IO.Binary.Tests
             }
             stream.Position = 0;
 
-            using var reader = new BinaryValueReader( stream, StreamOwnership.Retain, Endianness.Little, Encoding.Default );
-            Assert.IsTrue( reader.ReadBit() );
-            Assert.IsTrue( reader.ReadBit() );
-            Assert.IsFalse( reader.ReadBit() );
-            Assert.IsTrue( reader.ReadBit() );
-            reader.Seek( 3, SeekOrigin.Current );
-            Assert.IsFalse( reader.ReadBit() );
-            Assert.IsFalse( reader.ReadBit() );
-            Assert.IsTrue( reader.ReadBit() );
-            Assert.IsFalse( reader.ReadBit() );
+            using ( var reader = new BinaryValueReader( stream, StreamOwnership.Retain, Endianness.Little, Encoding.Default ) )
+            {
+                Assert.IsTrue( reader.ReadBit() );
+                Assert.IsTrue( reader.ReadBit() );
+                Assert.IsFalse( reader.ReadBit() );
+                Assert.IsTrue( reader.ReadBit() );
+                reader.Seek( 3, SeekOrigin.Current );
+                Assert.IsFalse( reader.ReadBit() );
+                Assert.IsFalse( reader.ReadBit() );
+                Assert.IsTrue( reader.ReadBit() );
+                Assert.IsFalse( reader.ReadBit() );
+            }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -268,9 +272,11 @@ namespace Amicitia.IO.Binary.Tests
 
             void DoTest( byte[] bytes, StringBinaryFormat format, int fixedLength, string expected )
             {
-                using var reader = new BinaryValueReader(new MemoryStream(bytes), StreamOwnership.Transfer, Endianness.Little, Encoding.Default);
-                var value = reader.ReadString(format, fixedLength);
-                Assert.AreEqual( expected, value );
+                using ( var reader = new BinaryValueReader( new MemoryStream( bytes ), StreamOwnership.Transfer, Endianness.Little, Encoding.Default ) )
+                {
+                    var value = reader.ReadString(format, fixedLength);
+                    Assert.AreEqual( expected, value );
+                }
             }
 
             DoTest( nullTerminatedStringBytes, StringBinaryFormat.NullTerminated, -1, "HELLO" );

@@ -166,12 +166,21 @@ namespace Amicitia.IO.Streams
 
         public override long Seek( long offset, SeekOrigin origin )
         {
-            var calculatedPosition = origin switch
+            long calculatedPosition;
+            switch ( origin )
             {
-                SeekOrigin.Begin => offset,
-                SeekOrigin.Current => mPosition + offset,
-                SeekOrigin.End => mBaseStream.Length - offset
-            };
+                case SeekOrigin.Begin:
+                    calculatedPosition = offset;
+                    break;
+                case SeekOrigin.Current:
+                    calculatedPosition = mPosition + offset;
+                    break;
+                case SeekOrigin.End:
+                    calculatedPosition = mPosition + offset;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException( nameof( origin ) );
+            }
 
             if ( calculatedPosition < mCurrentBlock.Start || calculatedPosition > mCurrentBlock.End )
                 SetCurrentBlock( GetBlockIndex( calculatedPosition ) );
