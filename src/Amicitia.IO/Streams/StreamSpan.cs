@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Amicitia.IO.Streams
 {
-    public class StreamSpan : Stream
+    public sealed class StreamSpan : Stream
     {
         private readonly Stream mBaseStream;
         private readonly long mStartPosition;
@@ -38,11 +39,13 @@ namespace Amicitia.IO.Streams
             mLength = stream.Length - start;
         }
 
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public override void Flush()
         {
             mBaseStream.Flush();
         }
 
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public override int Read( byte[] buffer, int offset, int count )
         {
             var temp = mBaseStream.Position;
@@ -53,6 +56,7 @@ namespace Amicitia.IO.Streams
             return read;
         }
 
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public override long Seek( long offset, SeekOrigin origin )
         {
             switch ( origin )
@@ -74,6 +78,7 @@ namespace Amicitia.IO.Streams
             return mPositionOffset;
         }
 
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
         private void EnsureOffsetValid( long offset, long newOffset )
         {
             if ( newOffset < 0 )
@@ -82,6 +87,7 @@ namespace Amicitia.IO.Streams
                 throw new ArgumentOutOfRangeException( nameof( offset ), offset, "Attempted to seek past the end of the stream." );
         }
 
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public override void SetLength( long value )
         {
             var newLength = mStartPosition + value;
@@ -91,6 +97,7 @@ namespace Amicitia.IO.Streams
             mLength = value;
         }
 
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public override void Write( byte[] buffer, int offset, int count )
         {
             var temp = mBaseStream.Position;
