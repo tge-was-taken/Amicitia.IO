@@ -24,6 +24,7 @@ namespace Amicitia.IO.Binary
         private bool mDisposed;
 
         public virtual long Position => mBaseStream.Position;
+        public long Length => mBaseStream.Length;
         public string FilePath { get; private set; }
         public Endianness Endianness { get; set; }
         public Encoding Encoding { get; private set; }
@@ -54,6 +55,13 @@ namespace Amicitia.IO.Binary
         {
             FlushBits();
             mBaseStream.Seek( offset, origin );
+        }
+
+
+        public SeekToken At( long offset, SeekOrigin origin )
+        {
+            FlushBits();
+            return new SeekToken( mBaseStream, offset, origin );
         }
 
         // Primitives
@@ -87,7 +95,11 @@ namespace Amicitia.IO.Binary
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="value"></param>
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public unsafe void Write<T>( T value ) where T : unmanaged
+            => Write( ref value );
+
+        public unsafe void Write<T>( ref T value ) where T : unmanaged
         {
             FlushBits();
 

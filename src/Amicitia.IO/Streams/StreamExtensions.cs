@@ -12,5 +12,8 @@ namespace Amicitia.IO.Streams
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public static StreamSpan Slice( this Stream stream, long start )
             => new StreamSpan( stream, start );
+
+        public static SeekToken At( this Stream stream, long offset, SeekOrigin origin )
+            => new SeekToken( stream, offset, origin );
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -33,6 +33,20 @@ namespace Amicitia.IO.Streams
         private Lazy<byte[]> mEmptyBlockData;
         private long mLength;
 
+        public override bool CanRead => true;
+        public override bool CanSeek => true;
+        public override bool CanWrite => true;
+        public override long Length => mLength;
+        public override long Position
+        {
+            get => mPosition;
+            set => mPosition = value;
+        }
+
+        public int BlockSize { get; }
+
+        public int MaxBlockCount { get; }
+
         public CachedBlockBufferedStream( Stream stream, int blockSize = DEFAULT_BLOCK_SIZE, int maxBlockCount = DEFAULT_MAX_BLOCK_COUNT )
         {
             mBaseStream = stream;
@@ -40,22 +54,9 @@ namespace Amicitia.IO.Streams
             MaxBlockCount = maxBlockCount;
             mBlocks = new Dictionary<int, Block>();
             mEmptyBlockData = new Lazy<byte[]>();
+            mLength = mBaseStream.Length;
             SetCurrentBlock( 0 );
         }
-
-        public override bool CanRead => true;
-        public override bool CanSeek => true;
-        public override bool CanWrite => true;
-        public override long Length => Math.Max( mBaseStream.Length, mLength );
-        public override long Position 
-        { 
-            get => mPosition;
-            set => mPosition = value; 
-        }
-
-        public int BlockSize { get; }
-
-        public int MaxBlockCount { get; }
 
         public override void Flush()
         {
@@ -206,6 +207,7 @@ namespace Amicitia.IO.Streams
                 Unsafe.CopyBlock( ref mCurrentBlock.Data[mCurrentBlockOffset], ref buffer[offset], ( uint )count );
                 mCurrentBlock.Flushed = false;
                 MoveCursor( count );
+                UpdateLength();
                 mCurrentBlock.UsedBytes = Math.Max( mCurrentBlock.UsedBytes, mCurrentBlockOffset );
             }
             else
@@ -226,9 +228,15 @@ namespace Amicitia.IO.Streams
                     Unsafe.CopyBlock( ref mCurrentBlock.Data[mCurrentBlockOffset], ref buffer[offset + readBytes], ( uint )curBlockSize );
                     mCurrentBlock.Flushed = false;
                     MoveCursor( curBlockSize );
+                    UpdateLength();
                     mCurrentBlock.UsedBytes = Math.Max( mCurrentBlock.UsedBytes, mCurrentBlockOffset );
                 }
             }
+        }
+
+        private void UpdateLength()
+        {
+            mLength = Math.Max( mBaseStream.Length, Math.Max( mLength, mPosition + mCurrentBlockOffset ) );
         }
 
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
@@ -268,12 +276,10 @@ namespace Amicitia.IO.Streams
 
             if ( mPosition < mCurrentBlock.Start || mPosition > mCurrentBlock.End )
                 SetCurrentBlock( GetBlockIndex( mPosition ) );
-
-            mLength = Math.Max( mLength, mPosition + mCurrentBlockOffset );
         }
 
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
-        private void EnsureReadWithinStreamBounds(int size)
+        private void EnsureReadWithinStreamBounds( int size )
         {
             if ( mPosition + size > mBaseStream.Length )
                 throw new IOException( "Attempted to read past the end of the stream" );
