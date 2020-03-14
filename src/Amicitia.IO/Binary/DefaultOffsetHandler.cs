@@ -69,6 +69,11 @@ namespace Amicitia.IO.Binary
             return position - OffsetOrigin;
         }
 
+        public long CalculateOffset( long position, long origin )
+        {
+            return position - origin;
+        }
+
         public void RegisterOffsetPosition( long offsetPosition )
         {
             mValidOffsetPositions.Add( offsetPosition );

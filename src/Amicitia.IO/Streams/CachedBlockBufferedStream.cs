@@ -66,7 +66,7 @@ namespace Amicitia.IO.Streams
                 if ( block.Start > mBaseStream.Length )
                 {
                     // Write padding blocks to fill the missing space
-                    var paddingStartOffset = ( ( mBaseStream.Length - block.Start ) / BlockSize ) * BlockSize;
+                    var paddingStartOffset = ( (  block.Start - mBaseStream.Length ) / BlockSize ) * BlockSize;
                     var paddingBlockCount = block.Start - paddingStartOffset;
                     mBaseStream.Seek( paddingStartOffset, SeekOrigin.Begin );
 

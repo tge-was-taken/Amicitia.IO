@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.12.0" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.12.0" ExcludeAssets="all"/>
     <PackageReference Include="System.Memory" Version="4.5.3" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.0" />
   </ItemGroup>

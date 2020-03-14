@@ -249,7 +249,7 @@ namespace Amicitia.IO.Binary
                 var prevPos = Position;
                 mBaseStream.Seek( cmd.Position, SeekOrigin.Begin );
                 OffsetHandler.RegisterOffsetPosition( cmd.Position );
-                WriteOffsetValue( OffsetHandler.CalculateOffset( pos ) );
+                WriteOffsetValue( OffsetHandler.CalculateOffset( pos, cmd.OffsetOrigin ) );
                 mBaseStream.Seek( prevPos, SeekOrigin.Begin );
             }
         }

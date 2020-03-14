@@ -31,17 +31,15 @@ namespace Amicitia.IO.Binary
 
         public BinaryValueWriter( string filePath, Endianness endianness, Encoding encoding = null )
         {
-            var fileStream = File.OpenRead(filePath);
+            var fileStream = File.Create(filePath);
             var bufferSize = DEFAULT_BLOCK_SIZE;
-            var stream = PrepareFileStreaming( fileStream.Length < IN_MEMORY_STREAMING_THRESHOLD ? FileStreamingMode.CopyToMemory : FileStreamingMode.Buffered, ref bufferSize, fileStream );
-            Initialize( stream, StreamOwnership.Transfer, filePath, endianness, encoding, bufferSize );
+            Initialize( fileStream, StreamOwnership.Transfer, filePath, endianness, encoding, bufferSize );
         }
 
         public BinaryValueWriter( string filePath, FileStreamingMode fileStreamingMode, Endianness endianness, Encoding encoding = null, int bufferSize = DEFAULT_BLOCK_SIZE )
         {
-            var fileStream = File.OpenRead(filePath);
-            var stream = PrepareFileStreaming( fileStreamingMode, ref bufferSize, fileStream );
-            Initialize( stream, StreamOwnership.Transfer, filePath, endianness, encoding, bufferSize );
+            var fileStream = File.Create(filePath);
+            Initialize( fileStream, StreamOwnership.Transfer, filePath, endianness, encoding, bufferSize );
         }
 
         public BinaryValueWriter( Stream stream, StreamOwnership streamOwnership, Endianness endianness,

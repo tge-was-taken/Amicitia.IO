@@ -15,5 +15,6 @@ namespace Amicitia.IO.Binary
         long ResolveOffset( long position, long offset );
         long ResolveOffset( long offset );
         long CalculateOffset( long position );
+        long CalculateOffset( long position, long origin );
     }
 }
