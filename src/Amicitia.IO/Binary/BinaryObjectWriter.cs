@@ -196,7 +196,7 @@ namespace Amicitia.IO.Binary
             else
             {
                 mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, value, 
-                    PopulateBinarySourceInfo && value is IBinarySerializableWithInfo,
+                    PopulateBinarySourceInfo && value is IBinarySourceInfo,
                     ( w, v ) => w.WriteObject( ( T )v ) ) );
                 WriteOffset( PLACEHOLDER_OFFSET );
             }
@@ -214,7 +214,7 @@ namespace Amicitia.IO.Binary
             {
                 var temp = ( value, context );
                 mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, temp,
-                    PopulateBinarySourceInfo && value is IBinarySerializableWithInfo,
+                    PopulateBinarySourceInfo && value is IBinarySourceInfo,
                     ( w, v ) =>
                     {
                         var temp2 = ( Tuple<T, TContext> ) v;
@@ -241,7 +241,7 @@ namespace Amicitia.IO.Binary
 
                     if ( cmd.PopulateInfo )
                     {
-                        ( ( ( IBinarySerializableWithInfo )cmd.Instance ) ).BinarySourceInfo =
+                        ( ( ( IBinarySourceInfo )cmd.Instance ) ).BinarySourceInfo =
                             new BinarySourceInfo( FilePath, pos, Position, ( int )( Position - pos ), Endianness );
                     }
                 }

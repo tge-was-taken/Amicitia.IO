@@ -4,15 +4,14 @@ using System.Text;
 
 namespace Amicitia.IO.Binary
 {
-    public interface IBinarySerializable
+    public interface IBaseBinarySerializable
+    {
+    }
+
+    public interface IBinarySerializable : IBaseBinarySerializable
     {
         void Read( BinaryObjectReader reader );
         void Write( BinaryObjectWriter writer );
-    }
-
-    public interface IBinarySerializableWithInfo : IBinarySerializable
-    {
-        BinarySourceInfo BinarySourceInfo { get; set; }
     }
 
     public interface IBinarySerializable<TContext> : IBinarySerializable
@@ -29,8 +28,18 @@ namespace Amicitia.IO.Binary
         void Write( BinaryObjectWriter writer, TContext context );
     }
 
-    public interface IBinarySerializableWithInfo<TContext> 
-        : IBinarySerializable<TContext>, IBinarySerializableWithInfo
+    public interface IBinarySourceInfo
+    {
+        BinarySourceInfo BinarySourceInfo { get; set; }
+    }
+
+    public interface IBinarySerializableWithInfo 
+        : IBinarySerializable, IBinarySourceInfo 
     { 
+    }
+
+    public interface IBinarySerializableWithInfo<TContext> 
+        : IBinarySerializable<TContext>, IBinarySourceInfo
+    {
     }
 }

@@ -191,7 +191,7 @@ namespace Amicitia.IO.Binary
             obj.Read( this );
             var endOffset = Position;
 
-            if ( PopulateBinarySourceInfo && obj is IBinarySerializableWithInfo info )
+            if ( PopulateBinarySourceInfo && obj is IBinarySourceInfo info )
                 info.BinarySourceInfo = new BinarySourceInfo( FilePath, startOffset, endOffset, ( int )( endOffset - startOffset ), Endianness );
         }
 
@@ -215,7 +215,7 @@ namespace Amicitia.IO.Binary
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         private void MaybePopulateSourceInfo( IBinarySerializable value, long startOffset, long endOffset )
         {
-            if ( PopulateBinarySourceInfo && value is IBinarySerializableWithInfo info )
+            if ( PopulateBinarySourceInfo && value is IBinarySourceInfo info )
                 info.BinarySourceInfo = new BinarySourceInfo( FilePath, startOffset, endOffset, ( int )( endOffset - startOffset ), Endianness );
         }
 
