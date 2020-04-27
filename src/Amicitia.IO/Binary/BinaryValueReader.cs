@@ -154,7 +154,7 @@ namespace Amicitia.IO.Binary
             return value;
         }
 
-[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ReadNative<T>( out T value ) where T : unmanaged
         {
             if ( typeof( T ) == typeof( byte ) || typeof( T ) == typeof( sbyte ) )
@@ -162,6 +162,7 @@ namespace Amicitia.IO.Binary
                 // Optimise for byte/sbyte
                 var tmp = InternalReadByte();
                 value = Unsafe.As<byte, T>( ref tmp );
+                return;
             }
 
             var size = Unsafe.SizeOf<T>();
