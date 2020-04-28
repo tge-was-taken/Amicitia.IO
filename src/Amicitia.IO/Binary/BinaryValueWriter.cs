@@ -427,7 +427,8 @@ namespace Amicitia.IO.Binary
             mLeaveOpen = streamOwnership == StreamOwnership.Retain;
             mBlockSize = blockSize;
 
-            if ( blockSize == 0 || input is MemoryStream )
+            // TODO: fix memory buffering
+            if ( true || blockSize == 0 || input is MemoryStream )
             {
                 // No block buffering
                 mBaseStream = input;
@@ -447,6 +448,9 @@ namespace Amicitia.IO.Binary
 
         protected static Stream PrepareFileStreaming( FileStreamingMode fileStreamingMode, ref int blockSize, FileStream fileStream )
         {
+            // TODO: fix memory buffering
+            return fileStream;
+
             switch ( fileStreamingMode )
             {
                 case FileStreamingMode.Buffered:
