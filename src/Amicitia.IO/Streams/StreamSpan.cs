@@ -50,7 +50,8 @@ namespace Amicitia.IO.Streams
         {
             var temp = mBaseStream.Position;
             mBaseStream.Position = mStartPosition + mPositionOffset;
-            var read = mBaseStream.Read( buffer, offset, count );
+            var actualCount = Math.Min( count, (int)(mLength - mPositionOffset) );
+            var read = mBaseStream.Read( buffer, offset, actualCount );
             mPositionOffset += read;
             mBaseStream.Position = temp;
             return read;

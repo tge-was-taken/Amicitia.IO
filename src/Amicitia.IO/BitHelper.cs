@@ -26,28 +26,36 @@ namespace Amicitia.IO
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public static void Pack( ref byte destination, byte value, int from, int to )
         {
-            var mask = byte.MaxValue >> ( sizeof( byte ) * 8 - ( to - from ) + 1 );
+            var bits = ( to - from ) + 1;
+            var shift = ( sizeof( byte ) * 8 ) - bits;
+            var mask = byte.MaxValue >> shift;
             destination = ( byte )( ( destination & ~( mask << from ) ) | ( ( value & mask ) << from ) );
         }
 
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public static void Pack( ref ushort destination, ushort value, int from, int to )
         {
-            var mask = ushort.MaxValue >> ( sizeof( ushort ) * 8 - ( to - from ) + 1 );
+            var bits = ( to - from ) + 1;
+            var shift = ( sizeof( ushort ) * 8 ) - bits;
+            var mask = ushort.MaxValue >> shift;
             destination = ( ushort )( ( destination & ~( mask << from ) ) | ( ( value & mask ) << from ) );
         }
 
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public static void Pack( ref uint destination, uint value, int from, int to )
         {
-            var mask = uint.MaxValue >> ( sizeof( uint ) * 8 - ( to - from ) + 1 );
+            var bits = ( to - from ) + 1;
+            var shift = ( sizeof( uint ) * 8 ) - bits;
+            var mask = uint.MaxValue >> shift;
             destination = ( uint )( ( destination & ~( mask << from ) ) | ( ( value & mask ) << from ) );
         }
 
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public static void Pack( ref ulong destination, ulong value, int from, int to )
         {
-            var mask = ulong.MaxValue >> ( sizeof( ulong ) * 8 - ( to - from ) + 1 );
+            var bits = ( to - from ) + 1;
+            var shift = ( sizeof( ulong ) * 8 ) - bits;
+            var mask = ulong.MaxValue >> shift;
             destination = ( ulong )( ( destination & ~( mask << from ) ) | ( ( value & mask ) << from ) );
         }
 

@@ -361,7 +361,14 @@ namespace Amicitia.IO.Binary
             if ( disposing )
             {
                 FlushBits();
+                var positionBeforeFlushing = mBaseStream.Position;
                 mBaseStream.Flush();
+                if ( mBaseStream.Position != positionBeforeFlushing )
+                {
+                    // Fill remainder with padding
+                    for ( int i = 0; i < mBaseStream.Position - positionBeforeFlushing; i++ )
+                        WriteByteCore( 0 );
+                }
 
                 if ( !mLeaveOpen )
                     mBaseStream.Dispose();

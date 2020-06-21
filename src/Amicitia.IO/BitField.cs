@@ -79,6 +79,11 @@ namespace Amicitia.IO
         [MethodImpl( MethodImplOptions.AggressiveInlining )] public static implicit operator uint( BitField<TUnderlying, TValue, TFrom, TTo> value ) => Number.Cast<TValue, uint>( value.Get() );
         [MethodImpl( MethodImplOptions.AggressiveInlining )] public static implicit operator long( BitField<TUnderlying, TValue, TFrom, TTo> value ) => Number.Cast<TValue, long>( value.Get() );
         [MethodImpl( MethodImplOptions.AggressiveInlining )] public static implicit operator ulong( BitField<TUnderlying, TValue, TFrom, TTo> value ) => Number.Cast<TValue, ulong>( value.Get() );
+
+        public override string ToString()
+        {
+            return Get().ToString();
+        }
     }
 
     public struct BitField<TValue, TFrom, TTo>
@@ -98,5 +103,10 @@ namespace Amicitia.IO
         [MethodImpl( MethodImplOptions.AggressiveInlining )] public static implicit operator uint( BitField<TValue, TFrom, TTo> value ) => Number.Cast<TValue, uint>( value.Get() );
         [MethodImpl( MethodImplOptions.AggressiveInlining )] public static implicit operator long( BitField<TValue, TFrom, TTo> value ) => Number.Cast<TValue, long>( value.Get() );
         [MethodImpl( MethodImplOptions.AggressiveInlining )] public static implicit operator ulong( BitField<TValue, TFrom, TTo> value ) => Number.Cast<TValue, ulong>( value.Get() );
+
+        public override string ToString()
+        {
+            return Get().ToString();
+        }
     }
 }
