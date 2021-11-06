@@ -110,6 +110,11 @@ namespace Amicitia.IO.Binary
         public T ReadValueOffset<T>() where T : unmanaged
             => ReadValueAtOffset<T>( ReadOffsetValue() );
 
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T ReadValueAtOffset<T>( SeekToken offset ) where T : unmanaged
+            => ReadValueAtOffset<T>( ( long ) offset );
+
         public T ReadValueAtOffset<T>( long offset ) where T : unmanaged
         {
             T value = default;

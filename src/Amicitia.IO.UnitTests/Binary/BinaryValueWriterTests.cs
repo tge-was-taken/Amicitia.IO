@@ -99,10 +99,16 @@ namespace Amicitia.IO.Binary.Tests
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         struct TestStruct
         {
-            public int Field1;
-            public uint Field2;
-            public float Field3;
-            public byte Field4;
+            public TestEnum Field1;
+            public int Field2;
+            public uint Field3;
+            public float Field4;
+            public byte Field5;
+        }
+
+        enum TestEnum : short
+        {
+            Zero, One, Two
         }
 
         public static void WriteTest( Func<Stream, StreamOwnership, Endianness, BinaryValueWriter> writerFactory )
@@ -110,6 +116,7 @@ namespace Amicitia.IO.Binary.Tests
             var leStream = new MemoryStream();
             using ( var writer = writerFactory( leStream, StreamOwnership.Retain, Endianness.Little  ) )
             {
+                writer.Write<TestEnum>( TestEnum.One );
                 writer.Write<int>( 0x12345678 );
                 writer.Write<uint>( 0xDEADBEEF );
                 writer.Write<float>( 1.0f );
@@ -121,6 +128,7 @@ namespace Amicitia.IO.Binary.Tests
             var beStream = new MemoryStream();
             using ( var writer = writerFactory( beStream, StreamOwnership.Retain, Endianness.Big ) )
             {
+                writer.Write<TestEnum>( TestEnum.One );
                 writer.Write<int>( 0x12345678 );
                 writer.Write<uint>( 0xDEADBEEF );
                 writer.Write<float>( 1.0f );
@@ -132,7 +140,7 @@ namespace Amicitia.IO.Binary.Tests
             var structStream = new MemoryStream();
             using ( var writer = writerFactory( structStream, StreamOwnership.Retain, Endianness.Big ) )
             {
-                writer.Write<TestStruct>( new TestStruct() { Field1 = 0x12345678, Field2 = 0xDEADBEEF, Field3 = 1.0f, Field4 = 0xFF } );
+                writer.Write<TestStruct>( new TestStruct() { Field1 = TestEnum.One, Field2 = 0x12345678, Field3 = 0xDEADBEEF, Field4 = 1.0f, Field5 = 0xFF } );
             }
             structStream.Position = 0;
 
@@ -145,16 +153,17 @@ namespace Amicitia.IO.Binary.Tests
                     Assert.IsTrue( reader.Read<byte>() == bytes[i] );
 
                 reader.Seek( 0, SeekOrigin.Begin );
+                Assert.IsTrue( reader.Read<TestEnum>() == TestEnum.One );
                 Assert.IsTrue( reader.Read<int>() == 0x12345678 );
                 Assert.IsTrue( reader.Read<uint>() == 0xDEADBEEF );
                 Assert.IsTrue( reader.Read<float>() == 1.0f );
 
                 reader.Seek( 0, SeekOrigin.Begin );
                 var testStruct = reader.Read<TestStruct>();
-                Assert.IsTrue( testStruct.Field1 == 0x12345678 );
-                Assert.IsTrue( testStruct.Field2 == 0xDEADBEEF );
-                Assert.IsTrue( testStruct.Field3 == 1.0f );
-                Assert.IsTrue( testStruct.Field4 == 0xFF );
+                Assert.IsTrue( testStruct.Field2 == 0x12345678 );
+                Assert.IsTrue( testStruct.Field3 == 0xDEADBEEF );
+                Assert.IsTrue( testStruct.Field4 == 1.0f );
+                Assert.IsTrue( testStruct.Field5 == 0xFF );
             }
 
             // Default buffer size

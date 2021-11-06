@@ -19,7 +19,8 @@ namespace Amicitia.IO.Binary
                 typeof( T ) != typeof( short ) && typeof( T ) != typeof( ushort ) &&
                 typeof( T ) != typeof( int ) && typeof( T ) != typeof( uint ) &&
                 typeof( T ) != typeof( long ) && typeof( T ) != typeof( ulong ) &&
-                typeof( T ) != typeof( float ) && typeof( T ) != typeof( double ) )
+                typeof( T ) != typeof( float ) && typeof( T ) != typeof( double ) &&
+                !typeof( T ).IsEnum)
             {
                 sReverseMethod = TypeBinaryReverseMethodGenerator.Generate<T>();
             }
@@ -30,17 +31,17 @@ namespace Amicitia.IO.Binary
         {
             if ( typeof( T ) == typeof( byte ) || typeof( T ) == typeof( sbyte ) )
                 return;
-            else if ( typeof( T ) == typeof( short ) || typeof( T ) == typeof( ushort ) )
+            else if ( typeof( T ) == typeof( short ) || typeof( T ) == typeof( ushort ) || Unsafe.SizeOf<T>() == sizeof( short ) )
             {
                 var reversedValue = BinaryPrimitives.ReverseEndianness( Unsafe.As<T, ushort>( ref value ) );
                 value = Unsafe.As<ushort, T>( ref reversedValue );
             }
-            else if ( typeof( T ) == typeof( int ) || typeof( T ) == typeof( uint ) || typeof( T ) == typeof( float ) )
+            else if ( typeof( T ) == typeof( int ) || typeof( T ) == typeof( uint ) || typeof( T ) == typeof( float ) || Unsafe.SizeOf<T>() == sizeof( int ) )
             {
                 var reversedValue = BinaryPrimitives.ReverseEndianness( Unsafe.As<T, uint>( ref value ) );
                 value = Unsafe.As<uint, T>( ref reversedValue );
             }
-            else if ( typeof( T ) == typeof( long ) || typeof( T ) == typeof( ulong ) || typeof( T ) == typeof( double ) )
+            else if ( typeof( T ) == typeof( long ) || typeof( T ) == typeof( ulong ) || typeof( T ) == typeof( double ) || Unsafe.SizeOf<T>() == sizeof( long ) )
             {
                 var reversedValue = BinaryPrimitives.ReverseEndianness( Unsafe.As<T, ulong>( ref value ) );
                 value = Unsafe.As<ulong, T>( ref reversedValue );

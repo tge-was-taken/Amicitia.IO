@@ -46,17 +46,23 @@ namespace Amicitia.IO.Binary.Tests
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         struct TestStruct
         {
-            public int Field1;
-            public uint Field2;     
-            public float Field3;
-            public byte Field4;
+            public TestEnum Field1;
+            public int Field2;
+            public uint Field3;     
+            public float Field4;
+            public byte Field5;
+        }
+
+        enum TestEnum : short
+        {
+            Zero, One, Two
         }
 
         [TestMethod()]
         public void ReadTest()
         {
-            var leBytes = new byte[] { 0x78, 0x56, 0x34, 0x12, 0xEF, 0xBE, 0xAD, 0xDE, 0x00, 0x00, 0x80, 0x3F, 0xFF };
-            var beBytes = new byte[] { 0x12, 0x34, 0x56, 0x78, 0xDE, 0xAD, 0xBE, 0xEF, 0x3F, 0x80, 0x00, 0x00, 0xFF };
+            var leBytes = new byte[] { 0x01, 0x00, 0x78, 0x56, 0x34, 0x12, 0xEF, 0xBE, 0xAD, 0xDE, 0x00, 0x00, 0x80, 0x3F, 0xFF };
+            var beBytes = new byte[] { 0x00, 0x01, 0x12, 0x34, 0x56, 0x78, 0xDE, 0xAD, 0xBE, 0xEF, 0x3F, 0x80, 0x00, 0x00, 0xFF };
 
             void DoTests( byte[] bytes, BinaryValueReader reader )
             {
@@ -64,16 +70,18 @@ namespace Amicitia.IO.Binary.Tests
                     Assert.IsTrue( reader.Read<byte>() == bytes[i] );
 
                 reader.Seek( 0, SeekOrigin.Begin );
+                Assert.IsTrue( reader.Read<TestEnum>() == TestEnum.One );
                 Assert.IsTrue( reader.Read<int>() == 0x12345678 );
                 Assert.IsTrue( reader.Read<uint>() == 0xDEADBEEF );
                 Assert.IsTrue( reader.Read<float>() == 1.0f );
 
                 reader.Seek( 0, SeekOrigin.Begin );
                 var testStruct = reader.Read<TestStruct>();
-                Assert.IsTrue( testStruct.Field1 == 0x12345678 );
-                Assert.IsTrue( testStruct.Field2 == 0xDEADBEEF );
-                Assert.IsTrue( testStruct.Field3 == 1.0f );
-                Assert.IsTrue( testStruct.Field4 == 0xFF );
+                Assert.IsTrue( testStruct.Field1 == TestEnum.One );
+                Assert.IsTrue( testStruct.Field2 == 0x12345678 );
+                Assert.IsTrue( testStruct.Field3 == 0xDEADBEEF );
+                Assert.IsTrue( testStruct.Field4 == 1.0f );
+                Assert.IsTrue( testStruct.Field5 == 0xFF );
             }
 
             // Default buffer size
