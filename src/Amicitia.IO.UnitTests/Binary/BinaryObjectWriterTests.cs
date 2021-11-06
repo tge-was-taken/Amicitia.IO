@@ -7,7 +7,6 @@ using System.IO;
 using System.Numerics;
 using System.Text;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Amicitia.IO.Streams;
 
 namespace Amicitia.IO.Binary.Tests
@@ -118,10 +117,6 @@ namespace Amicitia.IO.Binary.Tests
             }
 
             stream.Position = 0;
-            unsafe
-            {
-                var ptr = Unsafe.AsPointer(ref stream.ToArray()[0]);
-            }
             using ( var reader = new BinaryObjectReader( stream, StreamOwnership.Retain, Endianness.Little ) )
             {
                 Assert.AreEqual( 420, reader.ReadValueOffset<int>() );
