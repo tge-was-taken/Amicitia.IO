@@ -42,7 +42,7 @@ namespace Amicitia.IO.Binary.Utilities
                      member.FieldType == typeof( int ) || member.FieldType == typeof( uint ) ||
                      member.FieldType == typeof( long ) || member.FieldType == typeof( ulong ) ||
                      member.FieldType == typeof( float ) || member.FieldType == typeof( double ) ||
-                     member.FieldType == typeof( decimal ) )
+                     member.FieldType == typeof( decimal ) || member.FieldType.IsEnum )
                 {
                     var typedReverseMethod = reverseMethod.MakeGenericMethod( member.FieldType );
                     body.Add( Expression.Call( typedReverseMethod, memberAccessExpr ) );
@@ -60,17 +60,17 @@ namespace Amicitia.IO.Binary.Utilities
             // Manually inlined BinaryOperations<T>.Reverse( value )
             if ( typeof( T ) == typeof( byte ) || typeof( T ) == typeof( sbyte ) )
                 return;
-            else if ( typeof( T ) == typeof( short ) || typeof( T ) == typeof( ushort ) )
+            else if ( typeof( T ) == typeof( short ) || typeof( T ) == typeof( ushort ) || Unsafe.SizeOf<T>() == sizeof( short ) )
             {
                 var reversedValue = BinaryPrimitives.ReverseEndianness( Unsafe.As<T, ushort>( ref value ) );
                 value = Unsafe.As<ushort, T>( ref reversedValue );
             }
-            else if ( typeof( T ) == typeof( int ) || typeof( T ) == typeof( uint ) || typeof( T ) == typeof( float ) )
+            else if ( typeof( T ) == typeof( int ) || typeof( T ) == typeof( uint ) || typeof( T ) == typeof( float ) || Unsafe.SizeOf<T>() == sizeof(int))
             {
                 var reversedValue = BinaryPrimitives.ReverseEndianness( Unsafe.As<T, uint>( ref value ) );
                 value = Unsafe.As<uint, T>( ref reversedValue );
             }
-            else if ( typeof( T ) == typeof( long ) || typeof( T ) == typeof( ulong ) || typeof( T ) == typeof( double ) )
+            else if ( typeof( T ) == typeof( long ) || typeof( T ) == typeof( ulong ) || typeof( T ) == typeof( double ) || Unsafe.SizeOf<T>() == sizeof(long))
             {
                 var reversedValue = BinaryPrimitives.ReverseEndianness( Unsafe.As<T, ulong>( ref value ) );
                 value = Unsafe.As<ulong, T>( ref reversedValue );
