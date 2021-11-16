@@ -40,7 +40,7 @@ namespace Amicitia.IO.Streams
         public override long Position
         {
             get => mPosition;
-            set => mPosition = value;
+            set => Seek(value, SeekOrigin.Begin);
         }
 
         public int BlockSize { get; }
