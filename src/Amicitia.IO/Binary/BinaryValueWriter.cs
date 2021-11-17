@@ -444,7 +444,7 @@ namespace Amicitia.IO.Binary
             else
             {
                 // Block buffered
-                mBaseStream = new CachedBlockBufferedStream( input, blockSize );
+                mBaseStream = new CachedBlockBufferedStream( input, blockSize, leaveOpen: mLeaveOpen );
             }
 
             FilePath = fileName;
