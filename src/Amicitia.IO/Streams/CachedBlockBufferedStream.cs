@@ -32,6 +32,7 @@ namespace Amicitia.IO.Streams
         private long mPosition;
         private Lazy<byte[]> mEmptyBlockData;
         private long mLength;
+        private bool mLeaveOpen;
 
         public override bool CanRead => true;
         public override bool CanSeek => true;
@@ -47,11 +48,12 @@ namespace Amicitia.IO.Streams
 
         public int MaxBlockCount { get; }
 
-        public CachedBlockBufferedStream( Stream stream, int blockSize = DEFAULT_BLOCK_SIZE, int maxBlockCount = DEFAULT_MAX_BLOCK_COUNT )
+        public CachedBlockBufferedStream( Stream stream, int blockSize = DEFAULT_BLOCK_SIZE, int maxBlockCount = DEFAULT_MAX_BLOCK_COUNT, bool leaveOpen = true )
         {
             mBaseStream = stream;
             BlockSize = blockSize;
             MaxBlockCount = maxBlockCount;
+            mLeaveOpen = leaveOpen;
             mBlocks = new Dictionary<int, Block>();
             mEmptyBlockData = new Lazy<byte[]>();
             mLength = mBaseStream.Length;
@@ -232,6 +234,14 @@ namespace Amicitia.IO.Streams
                     mCurrentBlock.UsedBytes = Math.Max( mCurrentBlock.UsedBytes, mCurrentBlockOffset );
                 }
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if ( disposing && !mLeaveOpen )
+                mBaseStream.Dispose();
+
+            base.Dispose( disposing );
         }
 
         private void UpdateLength()
