@@ -206,7 +206,7 @@ namespace Amicitia.IO.Binary
             return value;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void ReadObject( IBinarySerializable obj )
         {
             ReadObject( ref obj );
