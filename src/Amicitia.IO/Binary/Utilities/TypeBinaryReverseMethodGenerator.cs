@@ -33,7 +33,7 @@ namespace Amicitia.IO.Binary.Utilities
 
         private static void Generate( Type type, MethodInfo reverseMethod, List<Expression> body, Expression instance )
         {
-            var fields = type.GetFields();
+            var fields = type.GetFields(  BindingFlags.Instance | BindingFlags.Public );
             foreach ( var member in fields )
             {
                 var memberAccessExpr = Expression.MakeMemberAccess( instance, member );

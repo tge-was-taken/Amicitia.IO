@@ -182,11 +182,12 @@ namespace Amicitia.IO.Binary
             {
                 if ( !mObjectCache.TryGetValue( target, out var cachedValue ) )
                 {
-                    mObjectCache[target] = value = new T();
+                    value = new T();
                     var positionSave = Position;
                     Seek( target, SeekOrigin.Begin );
-                    ReadObject( value );
+                    ReadObject( ref value );
                     Seek( positionSave, SeekOrigin.Begin );
+                    mObjectCache[target] = value;
                 }
                 else
                 {
@@ -201,12 +202,18 @@ namespace Amicitia.IO.Binary
         public T ReadObject<T>() where T : IBinarySerializable, new()
         {
             var value = new T();
-            ReadObject( value );
+            ReadObject( ref value );
             return value;
         }
 
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void ReadObject( IBinarySerializable obj )
+        {
+            ReadObject( ref obj );
+        }
+
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
+        public void ReadObject<T>( ref T obj ) where T : IBinarySerializable
         {
             var startOffset = Position;
             obj.Read( this );
@@ -220,12 +227,12 @@ namespace Amicitia.IO.Binary
         public T ReadObject<T, TContext>( TContext context ) where T : IBinarySerializable<TContext>, new()
         {
             var value = new T();
-            ReadObject( value );
+            ReadObject( ref value, context );
             return value;
         }
 
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
-        public void ReadObject<TContext>( IBinarySerializable<TContext> obj, TContext context )
+        public void ReadObject<T, TContext>( ref T obj, TContext context ) where T : IBinarySerializable<TContext>
         {
             var startOffset = Position;
             obj.Read( this, context );
