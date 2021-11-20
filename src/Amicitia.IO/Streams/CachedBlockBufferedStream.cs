@@ -185,7 +185,7 @@ namespace Amicitia.IO.Streams
                     throw new ArgumentOutOfRangeException( nameof( origin ) );
             }
 
-            if ( calculatedPosition < mCurrentBlock.Start || calculatedPosition > mCurrentBlock.End )
+            if ( calculatedPosition < mCurrentBlock.Start || calculatedPosition >= mCurrentBlock.End )
                 SetCurrentBlock( GetBlockIndex( calculatedPosition ) );
 
             var relOffset = ( int )( calculatedPosition - mCurrentBlock.Start );
@@ -284,7 +284,7 @@ namespace Amicitia.IO.Streams
             mCurrentBlockOffset += offset;
             mPosition += offset;
 
-            if ( mPosition < mCurrentBlock.Start || mPosition > mCurrentBlock.End )
+            if ( mPosition < mCurrentBlock.Start || mPosition >= mCurrentBlock.End )
                 SetCurrentBlock( GetBlockIndex( mPosition ) );
         }
 
