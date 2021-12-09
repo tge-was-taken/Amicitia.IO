@@ -242,6 +242,11 @@ namespace Amicitia.IO.Binary
         public void WriteStringNullTerminated( Encoding encoding, string value )
         {
             FlushBits();
+            if ( string.IsNullOrEmpty( value ) )
+            {
+                Write<byte>(0);
+                return;
+            }
             var bytes = encoding.GetBytes( value );
             WriteArray( bytes );
             Write<byte>( 0 );
