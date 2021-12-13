@@ -172,6 +172,10 @@ namespace Amicitia.IO.Binary
         public T ReadObjectOffset<T>() where T : IBinarySerializable, new()
             => ReadObjectAtOffset<T>( ReadOffsetValue() );
 
+        [DebuggerStepThrough]
+        public T ReadObjectOffset<T, TContext>( TContext context ) where T : IBinarySerializable<TContext>, new()
+            => ReadObjectAtOffset<T, TContext>( ReadOffsetValue(), context );
+
         public T ReadObjectAtOffset<T>( long offset ) 
             where T : IBinarySerializable, new()
         {
@@ -186,6 +190,32 @@ namespace Amicitia.IO.Binary
                     var positionSave = Position;
                     Seek( target, SeekOrigin.Begin );
                     ReadObject( ref value );
+                    Seek( positionSave, SeekOrigin.Begin );
+                    mObjectCache[target] = value;
+                }
+                else
+                {
+                    value = ( T )cachedValue;
+                }
+            }
+
+            return value;
+        }
+
+        public T ReadObjectAtOffset<T, TContext>( long offset, TContext context )
+            where T : IBinarySerializable<TContext>, new()
+        {
+            T value = default;
+
+            var target = OffsetHandler.ResolveOffset( offset );
+            if (target != -1)
+            {
+                if ( !mObjectCache.TryGetValue( target, out var cachedValue ) )
+                {
+                    value = new T();
+                    var positionSave = Position;
+                    Seek( target, SeekOrigin.Begin );
+                    ReadObject( ref value, context );
                     Seek( positionSave, SeekOrigin.Begin );
                     mObjectCache[target] = value;
                 }
