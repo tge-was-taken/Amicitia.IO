@@ -144,6 +144,30 @@ namespace Amicitia.IO.Binary
 #endif
         }
 
+
+        /// <summary>
+        /// Writes a value in the platform's byte ordering format
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        public unsafe void WriteNative<T>(T value) where T : unmanaged
+        {
+            FlushBits();
+
+            if ( typeof( T ) == typeof( byte ) || typeof( T ) == typeof( sbyte ) )
+            {
+                // Optimise for byte/sbyte
+                WriteByteCore( Unsafe.As<T, byte>( ref value ) );
+                return;
+            }
+
+#if NETSTANDARD2_1
+            WriteBytesCore( MemoryMarshal.Cast<T, byte>( MemoryMarshal.CreateReadOnlySpan( ref value, 1 ) ) );
+#else
+            WriteBytesCore( MemoryMarshal.Cast<T, byte>( new ReadOnlySpan<T>( Unsafe.AsPointer( ref value ), 1 ) ) );
+#endif
+        }
+
         /// <summary>
         /// Writes a value in big endian format regardless of specified or native endianness.
         /// </summary>
