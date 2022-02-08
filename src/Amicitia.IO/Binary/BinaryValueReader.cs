@@ -127,7 +127,7 @@ namespace Amicitia.IO.Binary
         }
 
         /// <summary>
-        /// Reads a value in big endian format of the specified endianness.
+        /// Reads a value in big endian format regardless of the specified endianness.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
@@ -147,15 +147,21 @@ namespace Amicitia.IO.Binary
                 BinaryOperations<T>.Reverse( ref value );
         }
 
+
+        /// <summary>
+        /// Reads a value in the platform's byte ordering format
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
-        private T ReadNative<T>() where T : unmanaged
+        public T ReadNative<T>() where T : unmanaged
         {
             ReadNative<T>( out var value );
             return value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ReadNative<T>( out T value ) where T : unmanaged
+        public void ReadNative<T>( out T value ) where T : unmanaged
         {
             if ( typeof( T ) == typeof( byte ) || typeof( T ) == typeof( sbyte ) )
             {
