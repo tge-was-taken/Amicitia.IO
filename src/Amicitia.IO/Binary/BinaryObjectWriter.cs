@@ -228,7 +228,7 @@ namespace Amicitia.IO.Binary
             }
             else
             {
-                var temp = ( value, context );
+                var temp = new Tuple<T, TContext>( value, context );
                 mCmdQueue.Enqueue( new WriteOffsetCmd( Position, OffsetHandler.OffsetOrigin, alignment, value, temp,
                     PopulateBinarySourceInfo && value is IBinarySourceInfo,
                     ( w, v ) =>
