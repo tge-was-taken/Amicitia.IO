@@ -31,17 +31,17 @@ namespace Amicitia.IO.Binary
         {
             if ( typeof( T ) == typeof( byte ) || typeof( T ) == typeof( sbyte ) )
                 return;
-            else if ( typeof( T ) == typeof( short ) || typeof( T ) == typeof( ushort ) || Unsafe.SizeOf<T>() == sizeof( short ) )
+            else if ( typeof( T ) == typeof( short ) || typeof( T ) == typeof( ushort ) || ( Unsafe.SizeOf<T>() == sizeof( short ) && value is Enum ) )
             {
                 var reversedValue = BinaryPrimitives.ReverseEndianness( Unsafe.As<T, ushort>( ref value ) );
                 value = Unsafe.As<ushort, T>( ref reversedValue );
             }
-            else if ( typeof( T ) == typeof( int ) || typeof( T ) == typeof( uint ) || typeof( T ) == typeof( float ) || Unsafe.SizeOf<T>() == sizeof( int ) )
+            else if ( typeof( T ) == typeof( int ) || typeof( T ) == typeof( uint ) || typeof( T ) == typeof( float ) || ( Unsafe.SizeOf<T>() == sizeof( int ) && value is Enum ) )
             {
                 var reversedValue = BinaryPrimitives.ReverseEndianness( Unsafe.As<T, uint>( ref value ) );
                 value = Unsafe.As<uint, T>( ref reversedValue );
             }
-            else if ( typeof( T ) == typeof( long ) || typeof( T ) == typeof( ulong ) || typeof( T ) == typeof( double ) || Unsafe.SizeOf<T>() == sizeof( long ) )
+            else if ( typeof( T ) == typeof( long ) || typeof( T ) == typeof( ulong ) || typeof( T ) == typeof( double ) || ( Unsafe.SizeOf<T>() == sizeof( long ) && value is Enum ) )
             {
                 var reversedValue = BinaryPrimitives.ReverseEndianness( Unsafe.As<T, ulong>( ref value ) );
                 value = Unsafe.As<ulong, T>( ref reversedValue );
