@@ -232,7 +232,7 @@ namespace Amicitia.IO.Binary
         }
 
         #region Backwards compatibility / Helpers
-        public byte ReadSByte() => Read<byte>();
+        public sbyte ReadSByte() => Read<sbyte>();
         public byte ReadByte() => Read<byte>();
         public short ReadInt16() => Read<short>();
         public ushort ReadUInt16() => Read<ushort>();
