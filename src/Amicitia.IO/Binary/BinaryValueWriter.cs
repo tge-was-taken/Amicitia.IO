@@ -265,15 +265,28 @@ namespace Amicitia.IO.Binary
         [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void WriteStringNullTerminated( Encoding encoding, string value )
         {
+            bool isUnicode = encoding == Encoding.Unicode || encoding == Encoding.BigEndianUnicode;
+
             FlushBits();
+
             if ( string.IsNullOrEmpty( value ) )
             {
-                Write<byte>(0);
+                if ( isUnicode )
+                    Write<ushort>( 0 );
+                else
+                    Write<byte>( 0 );
+                
                 return;
             }
+
             var bytes = encoding.GetBytes( value );
+
             WriteArray( bytes );
-            Write<byte>( 0 );
+
+            if ( isUnicode )
+                Write<ushort>( 0 );
+            else
+                Write<byte>( 0 );
         }
 
         public void WriteStringFixedLength( Encoding encoding, string value, int fixedLength )
