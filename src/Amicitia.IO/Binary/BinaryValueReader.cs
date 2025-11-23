@@ -86,7 +86,7 @@ namespace Amicitia.IO.Binary
 
         public T Read<T>() where T : unmanaged
         {
-            var value = ReadNative<T>();
+            ReadNative<T>( out var value );
             if ( Unsafe.SizeOf<T>() != 1 && IsSwappingNeeded() )
                 BinaryOperations<T>.Reverse( ref value );
 
@@ -107,7 +107,7 @@ namespace Amicitia.IO.Binary
         /// <returns></returns>
         public T ReadLittle<T>() where T : unmanaged
         {
-            var value = ReadNative<T>();
+            ReadNative<T>( out var value );
             if ( Unsafe.SizeOf<T>() != 1 && !BitConverter.IsLittleEndian )
                 BinaryOperations<T>.Reverse( ref value );
 
@@ -133,7 +133,7 @@ namespace Amicitia.IO.Binary
         /// <returns></returns>
         public T ReadBig<T>() where T : unmanaged
         {
-            var value = ReadNative<T>();
+            ReadNative<T>( out var value );
             if ( Unsafe.SizeOf<T>() != 1 && BitConverter.IsLittleEndian )
                 BinaryOperations<T>.Reverse( ref value );
 
@@ -160,7 +160,7 @@ namespace Amicitia.IO.Binary
             return value;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
         public void ReadNative<T>( out T value ) where T : unmanaged
         {
             if ( typeof( T ) == typeof( byte ) || typeof( T ) == typeof( sbyte ) )
