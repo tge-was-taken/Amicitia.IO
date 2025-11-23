@@ -26,7 +26,7 @@
   <Target Name="netstandard20" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
 
     <PropertyGroup>
-        <VersionPrefix>1.2.0</VersionPrefix>
+        <VersionPrefix>1.2.1</VersionPrefix>
         <PackageProjectUrl>https://github.com/tge-was-taken/Amicitia.IO</PackageProjectUrl>
         <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
         <PackageReadmeFile>README.md</PackageReadmeFile>
